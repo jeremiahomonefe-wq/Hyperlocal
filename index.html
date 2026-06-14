@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hyperlocal — Delta State Food Delivery</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black:   #0A0F0D;
+  --black2:  #111711;
+  --black3:  #182018;
+  --green:   #00E87A;
+  --green-d: #00b85f;
+  --amber:   #F5A623;
+  --amber-d: #c27d0e;
+  --white:   #F0F4F1;
+  --muted:   #7A8C7E;
+  --border:  rgba(255,255,255,0.08);
+  --r:       14px;
+  --pad:     clamp(1.25rem, 4vw, 4rem);
+  --section-y: clamp(3.5rem, 7vw, 6rem);
+  --content-max: 1200px;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--black);
+  color: var(--white);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+a { text-decoration: none; color: inherit; }
+
+/* ── NAV ──────────────────────────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 var(--pad); height: 64px;
+  background: rgba(10,15,13,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  transition: border-color .2s;
+}
+.nav-inner {
+  width: 100%; max-width: var(--content-max);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-size: 1.15rem; font-weight: 900; letter-spacing: -0.02em;
+  color: var(--white); display: flex; align-items: center; gap: 8px;
+  z-index: 301;
+}
+.nav-logo .dot { color: var(--green); }
+.nav-links { display: flex; align-items: center; gap: 2rem; }
+.nav-links a { font-size: 0.85rem; color: var(--muted); transition: color .2s; }
+.nav-links a:hover, .nav-links a.active { color: var(--white); }
+.nav-cta {
+  background: var(--green); color: var(--black);
+  padding: 9px 22px; border-radius: 30px;
+  font-size: 0.85rem; font-weight: 800; letter-spacing: -0.01em;
+  border: none; cursor: pointer; transition: background .2s, transform .1s;
+}
+.nav-cta:hover { background: var(--green-d); }
+.nav-cta:active { transform: scale(0.97); }
+
+/* hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column; justify-content: center; gap: 5px;
+  width: 36px; height: 36px;
+  background: transparent; border: none; cursor: pointer;
+  z-index: 301; padding: 0;
+}
+.hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--white); border-radius: 2px;
+  transition: transform .3s ease, opacity .3s ease;
+  transform-origin: center;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.mobile-menu {
+  position: fixed; inset: 64px 0 0 0; z-index: 299;
+  background: rgba(10,15,13,0.98);
+  backdrop-filter: blur(20px);
+  display: flex; flex-direction: column;
+  padding: 2rem var(--pad);
+  gap: 0.5rem;
+  transform: translateY(-100%);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform .35s ease, opacity .35s ease, visibility .35s;
+}
+.mobile-menu.open {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+.mobile-menu a {
+  font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em;
+  color: var(--white); padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+  transition: color .2s;
+}
+.mobile-menu a.active, .mobile-menu a:hover { color: var(--green); }
+.mobile-menu .nav-cta {
+  margin-top: 1.5rem; padding: 14px; text-align: center; font-size: 1rem;
+}
+body.menu-open { overflow: hidden; }
+
+/* ── HERO ─────────────────────────────────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding-top: 64px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 60% 80% at 70% 50%, rgba(0,232,122,0.07) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 60% at 90% 10%, rgba(245,166,35,0.05) 0%, transparent 60%);
+}
+.hero-grid-lines {
+  position: absolute; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.hero-left {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 3.5rem var(--pad);
+  padding-left: max(var(--pad), calc((100vw - var(--content-max)) / 2 + var(--pad)));
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0,232,122,0.1); border: 1px solid rgba(0,232,122,0.25);
+  color: var(--green); padding: 6px 16px; border-radius: 30px;
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; margin-bottom: 2rem;
+  width: fit-content;
+}
+.hero-eyebrow span { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.hero-h1 {
+  font-size: clamp(2.6rem, 6vw, 5.5rem);
+  font-weight: 900;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  margin-bottom: 1.75rem;
+  color: var(--white);
+}
+.hero-h1 .accent { color: var(--green); display: block; }
+.hero-h1 .sub-accent { color: var(--amber); }
+
+.hero-desc {
+  font-size: 1.05rem; color: var(--muted);
+  line-height: 1.75; max-width: 400px;
+  margin-bottom: 2.5rem;
+}
+.hero-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.btn-primary {
+  background: var(--green); color: var(--black);
+  padding: 14px 32px; border-radius: 50px;
+  font-size: 0.95rem; font-weight: 800; letter-spacing: -0.01em;
+  border: none; cursor: pointer; transition: all .2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary:hover { background: var(--green-d); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,232,122,0.3); }
+.btn-secondary {
+  background: transparent; color: var(--white);
+  padding: 14px 28px; border-radius: 50px;
+  font-size: 0.95rem; font-weight: 600;
+  border: 1.5px solid var(--border); cursor: pointer; transition: all .2s;
+}
+.btn-secondary:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
+
+.hero-stats {
+  display: flex; gap: 2rem; margin-top: 3rem;
+  padding-top: 2rem; border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.hstat-n { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.03em; color: var(--white); }
+.hstat-l { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+/* ── HERO RIGHT (SIGNUP CARD) ─────────────────────────────────────────────── */
+.hero-right {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem var(--pad) 3.5rem;
+  padding-right: max(var(--pad), calc((100vw - var(--content-max)) / 2 + var(--pad)));
+}
+.signup-card {
+  background: var(--black2);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 2.25rem 2rem;
+  width: 100%; max-width: 400px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.card-tag {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--green);
+  margin-bottom: 0.5rem;
+}
+.card-title {
+  font-size: 1.4rem; font-weight: 900; letter-spacing: -0.03em;
+  color: var(--white); margin-bottom: 0.4rem;
+}
+.card-sub { font-size: 0.83rem; color: var(--muted); margin-bottom: 1.75rem; }
+
+.field-wrap { margin-bottom: 1rem; }
+.field-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+.field-input {
+  width: 100%; padding: 12px 16px;
+  background: var(--black3); border: 1px solid var(--border);
+  border-radius: 10px; font-size: 0.9rem; color: var(--white);
+  outline: none; transition: border-color .2s;
+}
+.field-input:focus { border-color: rgba(0,232,122,0.5); }
+.field-input::placeholder { color: #3d4d41; }
+.field-input option { background: var(--black3); }
+
+.submit-btn {
+  width: 100%; padding: 14px;
+  background: var(--amber); color: var(--black);
+  border: none; border-radius: 12px;
+  font-size: 0.95rem; font-weight: 900; letter-spacing: -0.01em;
+  cursor: pointer; margin-top: 0.5rem;
+  transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.submit-btn:hover { background: var(--amber-d); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(245,166,35,0.3); }
+.submit-btn:active { transform: scale(0.98); }
+
+.success-state {
+  display: none; text-align: center; padding: 1rem 0;
+}
+.success-icon { font-size: 3rem; margin-bottom: 1rem; }
+.success-state h3 { font-size: 1.2rem; font-weight: 900; color: var(--green); margin-bottom: 6px; }
+.success-state p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+
+/* ── TICKER STRIP ─────────────────────────────────────────────────────────── */
+.ticker-section {
+  background: var(--green); padding: 14px 0; overflow: hidden;
+  position: relative;
+}
+.ticker-track {
+  display: flex; gap: 3rem;
+  animation: ticker 18s linear infinite;
+  white-space: nowrap; width: max-content;
+}
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.ticker-item {
+  font-size: 0.8rem; font-weight: 800; color: var(--black);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 10px;
+}
+.ticker-sep { color: rgba(0,0,0,0.25); }
+
+/* ── SECTION BASE ─────────────────────────────────────────────────────────── */
+.section { padding: var(--section-y) var(--pad); max-width: var(--content-max); margin: 0 auto; }
+.eyebrow {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--green);
+  margin-bottom: 1rem; display: block;
+}
+.section-h {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900; letter-spacing: -0.04em;
+  line-height: 1.08; margin-bottom: 1rem; color: var(--white);
+}
+.section-sub { font-size: 1.05rem; color: var(--muted); max-width: 520px; line-height: 1.7; margin-bottom: 3rem; }
+
+/* ── HOW IT WORKS ─────────────────────────────────────────────────────────── */
+.how-section { background: var(--black2); }
+.how-inner { max-width: var(--content-max); margin: 0 auto; padding: var(--section-y) var(--pad); }
+.steps-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5px;
+  background: var(--border); border: 1px solid var(--border); border-radius: 20px; overflow: hidden;
+  margin-top: 3rem;
+}
+.step-card {
+  background: var(--black2); padding: 2.5rem 2rem;
+  display: flex; flex-direction: column; gap: 1rem;
+  position: relative; transition: background .2s;
+}
+.step-card:hover { background: var(--black3); }
+.step-num {
+  font-size: 3.5rem; font-weight: 900; letter-spacing: -0.04em;
+  color: rgba(0,232,122,0.12); line-height: 1;
+}
+.step-card h4 { font-size: 1rem; font-weight: 800; color: var(--white); letter-spacing: -0.02em; }
+.step-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+.step-arrow {
+  position: absolute; top: 2.5rem; right: 2rem;
+  font-size: 1.2rem; color: rgba(255,255,255,0.1);
+}
+
+/* ── WHY ──────────────────────────────────────────────────────────────────── */
+.why-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  background: var(--border); border: 1px solid var(--border);
+  border-radius: 20px; overflow: hidden;
+}
+.why-card {
+  background: var(--black); padding: 2.25rem 2rem;
+  transition: background .2s;
+}
+.why-card:hover { background: var(--black3); }
+.why-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: rgba(0,232,122,0.1); border: 1px solid rgba(0,232,122,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; margin-bottom: 1.25rem;
+}
+.why-card h4 { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; color: var(--white); }
+.why-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+/* ── RESTAURANTS STRIP ────────────────────────────────────────────────────── */
+.rest-section { padding: var(--section-y) 0; overflow: hidden; }
+.rest-inner { max-width: var(--content-max); margin: 0 auto; padding: 0 var(--pad); }
+.rest-strip {
+  display: flex; gap: 1.5rem; margin-top: 2.5rem;
+  overflow-x: auto; padding-bottom: 1rem;
+  scrollbar-width: none;
+}
+.rest-strip::-webkit-scrollbar { display: none; }
+.rest-card {
+  min-width: 260px; background: var(--black2);
+  border: 1px solid var(--border); border-radius: 20px;
+  padding: 2rem; flex-shrink: 0;
+  transition: transform .2s, box-shadow .2s;
+}
+.rest-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+.rest-emoji { font-size: 2.5rem; margin-bottom: 1rem; }
+.rest-name { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; color: var(--white); margin-bottom: 4px; }
+.rest-loc { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
+.rest-tag {
+  display: inline-block; font-size: 0.7rem; font-weight: 700;
+  padding: 4px 10px; border-radius: 30px; letter-spacing: 0.04em;
+}
+.tag-live { background: rgba(0,232,122,0.12); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
+.tag-soon { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+
+/* ── CITIES ───────────────────────────────────────────────────────────────── */
+.cities-section { background: var(--black2); }
+.cities-inner { max-width: var(--content-max); margin: 0 auto; padding: var(--section-y) var(--pad); }
+.cities-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-top: 3rem; }
+.city-card {
+  background: var(--black); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.5rem;
+  display: flex; flex-direction: column; gap: 8px;
+  transition: border-color .2s, transform .2s;
+}
+.city-card.live { border-color: rgba(0,232,122,0.3); }
+.city-card.live:hover { transform: translateY(-3px); border-color: rgba(0,232,122,0.6); }
+.city-name { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; color: var(--white); }
+.city-status { font-size: 0.72rem; font-weight: 700; }
+.city-status.live { color: var(--green); }
+.city-status.soon { color: var(--muted); }
+
+/* ── CTA BAND ─────────────────────────────────────────────────────────────── */
+.cta-band {
+  padding: var(--section-y) var(--pad);
+  text-align: center;
+  background: linear-gradient(135deg, #0d1f14 0%, var(--black) 60%);
+  position: relative; overflow: hidden;
+}
+.cta-band-inner { max-width: var(--content-max); margin: 0 auto; position: relative; }
+.cta-band::before {
+  content: '';
+  position: absolute; top: -50%; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(0,232,122,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cta-band h2 {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 900; letter-spacing: -0.04em;
+  line-height: 1.05; margin-bottom: 1.25rem; color: var(--white);
+  position: relative;
+}
+.cta-band h2 span { color: var(--green); }
+.cta-band p { font-size: 1.05rem; color: var(--muted); margin-bottom: 2.5rem; position: relative; }
+.cta-band .btn-primary { margin: 0 auto; width: fit-content; font-size: 1rem; padding: 16px 40px; }
+
+/* ── FOOTER ───────────────────────────────────────────────────────────────── */
+footer {
+  background: var(--black); border-top: 1px solid var(--border);
+  padding: 2.5rem var(--pad);
+}
+.footer-inner {
+  max-width: var(--content-max); margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-logo { font-size: 1rem; font-weight: 900; color: var(--white); }
+.footer-logo span { color: var(--green); }
+footer p { font-size: 0.8rem; color: var(--muted); }
+footer a { color: var(--muted); transition: color .2s; }
+footer a:hover { color: var(--green); }
+
+/* ── SCROLL REVEAL ────────────────────────────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: .1s; }
+.reveal-delay-2 { transition-delay: .2s; }
+.reveal-delay-3 { transition-delay: .3s; }
+
+/* ── HERO TEXT ANIMATION ──────────────────────────────────────────────────── */
+.hero-left > * { opacity: 0; transform: translateY(20px); animation: fadeUp .7s ease forwards; }
+.hero-eyebrow   { animation-delay: .1s; }
+.hero-h1        { animation-delay: .25s; }
+.hero-desc      { animation-delay: .4s; }
+.hero-actions   { animation-delay: .5s; }
+.hero-stats     { animation-delay: .6s; }
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+/* ── RESPONSIVE ───────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; min-height: auto; }
+  .hero-left { padding: 2.5rem var(--pad) 1.5rem; }
+  .hero-right { padding: 1.5rem var(--pad) 3rem; }
+  .signup-card { max-width: 100%; }
+  .steps-grid { grid-template-columns: 1fr 1fr; }
+  .why-grid { grid-template-columns: 1fr 1fr; }
+
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+}
+@media (max-width: 560px) {
+  .steps-grid { grid-template-columns: 1fr; }
+  .why-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 1.25rem; }
+  .hero-h1 { font-size: clamp(2.4rem, 11vw, 3.2rem); }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions button { width: 100%; justify-content: center; }
+  .cta-band { padding: 4rem var(--pad); }
+  footer { flex-direction: column; text-align: center; gap: 0.75rem; }
+}
+@media (max-width: 380px) {
+  :root { --pad: 1rem; }
+  .hero-h1 { font-size: 2.1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">HYPER<span class="dot">LOCAL</span></div>
+    <div class="nav-links">
+      <a href="how-it-works.html">How it works</a>
+      <a href="restaurants.html">Restaurants</a>
+      <a href="cities.html">Cities</a>
+    </div>
+    <button class="nav-cta" id="navCtaDesktop" onclick="document.getElementById('signup-card').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html" class="active">Home</a>
+  <a href="how-it-works.html">How it works</a>
+  <a href="restaurants.html">Restaurants</a>
+  <a href="cities.html">Cities</a>
+  <button class="nav-cta" onclick="closeMenuAndScroll()">Join waitlist</button>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid-lines"></div>
+
+  <div class="hero-left">
+    <div class="hero-eyebrow"><span></span> Now coming to Delta State</div>
+    <h1 class="hero-h1">
+      Order food.<br>
+      <span class="accent">Get it fast.</span>
+      Built for <span class="sub-accent">your city.</span>
+    </h1>
+    <p class="hero-desc">Hyperlocal connects you to the best restaurants in Abraka and Warri — real menus, real prices, real delivery. No middleman. No Lagos pricing.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('signup-card').scrollIntoView({behavior:'smooth'})">
+        Join the waitlist →
+      </button>
+      <button class="btn-secondary" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">
+        See how it works
+      </button>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hstat-n">25–40</div>
+        <div class="hstat-l">Min delivery</div>
+      </div>
+      <div>
+        <div class="hstat-n">₦500</div>
+        <div class="hstat-l">Flat delivery fee</div>
+      </div>
+      <div>
+        <div class="hstat-n">2</div>
+        <div class="hstat-l">Launch cities</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="signup-card" id="signup-card">
+      <div class="card-tag">Early access</div>
+      <div class="card-title">Get in first.</div>
+      <div class="card-sub">Join the waitlist and be the first to order when we launch.</div>
+
+      <div id="signup-form">
+        <div class="field-wrap">
+          <label class="field-label">Your name</label>
+          <input class="field-input" type="text" id="fName" placeholder="e.g. Chioma Obi" />
+        </div>
+        <div class="field-wrap">
+          <label class="field-label">Phone number</label>
+          <input class="field-input" type="tel" id="fPhone" placeholder="08012345678" />
+        </div>
+        <div class="field-wrap">
+          <label class="field-label">Your city</label>
+          <select class="field-input" id="fCity">
+            <option value="">Select city</option>
+            <option>Abraka</option>
+            <option>Warri</option>
+            <option>Sapele</option>
+            <option>Asaba</option>
+            <option>Ughelli</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field-wrap">
+          <label class="field-label">I am a...</label>
+          <select class="field-input" id="fRole">
+            <option value="">Select role</option>
+            <option>Customer — I want to order food</option>
+            <option>Restaurant owner — I want to list my business</option>
+            <option>Delivery rider — I want to earn</option>
+          </select>
+        </div>
+        <button class="submit-btn" onclick="joinWaitlist()">Reserve my spot ↗</button>
+      </div>
+
+      <div class="success-state" id="success-state">
+        <div class="success-icon">🎉</div>
+        <h3>You're on the list!</h3>
+        <p>We'll WhatsApp you the moment Hyperlocal goes live in your city.</p>
+        <button class="submit-btn" style="margin-top:1.25rem" onclick="shareApp()">Share with a friend ↗</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-section" aria-hidden="true">
+  <div class="ticker-track" id="ticker">
+    <div class="ticker-item">Abraka <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Warri <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Fast delivery <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">₦500 flat fee <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Real-time tracking <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Coldscoop <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Charissa <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Nigerian payments <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Abraka <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Warri <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Fast delivery <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">₦500 flat fee <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Real-time tracking <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Coldscoop <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Charissa <span class="ticker-sep">✦</span></div>
+    <div class="ticker-item">Nigerian payments <span class="ticker-sep">✦</span></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="how-section" id="how">
+  <div class="how-inner">
+    <span class="eyebrow reveal">How it works</span>
+    <h2 class="section-h reveal reveal-delay-1">Four steps from<br>craving to doorstep.</h2>
+    <div class="steps-grid reveal reveal-delay-2">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-arrow">→</div>
+        <h4>Browse restaurants</h4>
+        <p>Discover real menus with real prices from the best restaurants near you — all in one app.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-arrow">→</div>
+        <h4>Pick your food</h4>
+        <p>Add items to your cart, customise your order, and check out in under 60 seconds.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-arrow">→</div>
+        <h4>Pay your way</h4>
+        <p>Opay, Moniepoint, bank transfer, or cash on delivery. All the ways Nigerians actually pay.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <h4>Track it live</h4>
+        <p>Watch your rider move in real time. No calls, no wondering — just your food, on its way.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHY HYPERLOCAL -->
+<section class="section" id="why">
+  <span class="eyebrow reveal">Why Hyperlocal</span>
+  <h2 class="section-h reveal reveal-delay-1">Built for here.<br>Not borrowed from Lagos.</h2>
+  <p class="section-sub reveal reveal-delay-2">We're not a national platform with a satellite office. We live here. We know the streets, the restaurants, and what fast actually means in your city.</p>
+  <div class="why-grid reveal reveal-delay-3">
+    <div class="why-card">
+      <div class="why-icon">⚡</div>
+      <h4>Faster delivery</h4>
+      <p>Shorter zones mean 25–40 minutes consistently — not the 90-minute estimates you've learned to double.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">📍</div>
+      <h4>Actually local</h4>
+      <p>Every restaurant is hand-picked and onboarded personally. No faceless listings — real relationships.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">💳</div>
+      <h4>Pay the Nigerian way</h4>
+      <p>Opay, Moniepoint, bank transfer, or cash. We built around how Delta State actually pays.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🗺</div>
+      <h4>Live tracking</h4>
+      <p>See your rider on the map in real time. Know exactly when your food arrives — down to the minute.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🤝</div>
+      <h4>Community first</h4>
+      <p>Our riders are from your neighbourhood. Every order creates income for someone in your community.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">✅</div>
+      <h4>No hidden charges</h4>
+      <p>₦500 delivery fee. That's it. What you see in the cart is what you pay — nothing added at checkout.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RESTAURANT STRIP -->
+<section class="rest-section" id="restaurants">
+  <div class="rest-inner">
+    <span class="eyebrow reveal">Launch partners</span>
+    <h2 class="section-h reveal reveal-delay-1">Restaurants you<br>already love.</h2>
+    <p class="section-sub reveal reveal-delay-2">We're launching with Delta State's most trusted food brands so you get great food from day one.</p>
+  </div>
+  <div class="rest-inner">
+    <div class="rest-strip reveal">
+      <div class="rest-card">
+        <div class="rest-emoji">🍦</div>
+        <div class="rest-name">Coldscoop</div>
+        <div class="rest-loc">📍 Abraka, Delta State</div>
+        <span class="rest-tag tag-live">● Launching soon</span>
+      </div>
+      <div class="rest-card">
+        <div class="rest-emoji">🍽️</div>
+        <div class="rest-name">Charissa</div>
+        <div class="rest-loc">📍 Warri, Delta State</div>
+        <span class="rest-tag tag-live">● Launching soon</span>
+      </div>
+      <div class="rest-card" style="border-style:dashed; opacity:0.5;">
+        <div class="rest-emoji">🏪</div>
+        <div class="rest-name">Your restaurant?</div>
+        <div class="rest-loc">Abraka or Warri</div>
+        <span class="rest-tag tag-soon">Partner with us</span>
+      </div>
+      <div class="rest-card" style="border-style:dashed; opacity:0.5;">
+        <div class="rest-emoji">🔒</div>
+        <div class="rest-name">More being added</div>
+        <div class="rest-loc">Delta State</div>
+        <span class="rest-tag tag-soon">Coming soon</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CITIES -->
+<div class="cities-section" id="cities">
+  <div class="cities-inner">
+    <span class="eyebrow reveal">Where we're launching</span>
+    <h2 class="section-h reveal reveal-delay-1">Starting here.<br>Scaling everywhere.</h2>
+    <p class="section-sub reveal reveal-delay-2">We begin where we can deliver the best service — then expand as the infrastructure grows.</p>
+    <div class="cities-grid reveal reveal-delay-3">
+      <div class="city-card live">
+        <div class="city-name">Abraka</div>
+        <div class="city-status live">● Launching soon</div>
+      </div>
+      <div class="city-card live">
+        <div class="city-name">Warri</div>
+        <div class="city-status live">● Launching soon</div>
+      </div>
+      <div class="city-card">
+        <div class="city-name">Asaba</div>
+        <div class="city-status soon">Coming next</div>
+      </div>
+      <div class="city-card">
+        <div class="city-name">Sapele</div>
+        <div class="city-status soon">Coming next</div>
+      </div>
+      <div class="city-card">
+        <div class="city-name">Ughelli</div>
+        <div class="city-status soon">In the pipeline</div>
+      </div>
+      <div class="city-card">
+        <div class="city-name">Benin City</div>
+        <div class="city-status soon">In the pipeline</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <div class="cta-band-inner">
+    <h2>Ready to eat <span>smarter?</span></h2>
+    <p>Join the waitlist. Be first. Tell your friends.</p>
+    <button class="btn-primary" onclick="document.getElementById('signup-card').scrollIntoView({behavior:'smooth'})">
+      Join the waitlist — it's free →
+    </button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">HYPER<span>LOCAL</span></div>
+    <p>Built by Jeremiah Omonefe · Abraka & Warri, Delta State · 2026</p>
+    <p>
+      <a href="https://wa.me/2348000000000">WhatsApp</a> &nbsp;·&nbsp;
+      <a href="mailto:hello@hyperlocal.ng">hello@hyperlocal.ng</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+// ── Hamburger menu ────────────────────────────────────────────────────────
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+
+function toggleMenu() {
+  const isOpen = mobileMenu.classList.toggle('open');
+  hamburger.classList.toggle('open', isOpen);
+  hamburger.setAttribute('aria-expanded', isOpen);
+  document.body.classList.toggle('menu-open', isOpen);
+}
+function closeMenu() {
+  mobileMenu.classList.remove('open');
+  hamburger.classList.remove('open');
+  hamburger.setAttribute('aria-expanded', 'false');
+  document.body.classList.remove('menu-open');
+}
+hamburger.addEventListener('click', toggleMenu);
+mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  // allow normal navigation, just close menu state
+  closeMenu();
+}));
+window.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+window.addEventListener('resize', () => { if (window.innerWidth > 900) closeMenu(); });
+
+function closeMenuAndScroll(){
+  closeMenu();
+  setTimeout(() => document.getElementById('signup-card').scrollIntoView({behavior:'smooth'}), 300);
+}
+
+// ── Waitlist ──────────────────────────────────────────────────────────────
+function joinWaitlist() {
+  const name  = document.getElementById('fName').value.trim();
+  const phone = document.getElementById('fPhone').value.trim();
+  const city  = document.getElementById('fCity').value;
+  const role  = document.getElementById('fRole').value;
+  if (!name || !phone || !city || !role) {
+    alert('Please fill in all fields.');
+    return;
+  }
+  document.getElementById('signup-form').style.display = 'none';
+  document.getElementById('success-state').style.display = 'block';
+  const msg = `*Hyperlocal Waitlist*\n\nName: ${name}\nPhone: ${phone}\nCity: ${city}\nRole: ${role}`;
+  setTimeout(() => {
+    window.open('https://wa.me/2348000000000?text=' + encodeURIComponent(msg), '_blank');
+  }, 800);
+}
+
+function shareApp() {
+  const msg = `I just joined the Hyperlocal waitlist! 🍛⚡\n\nFast food delivery coming to Abraka & Warri — built for Delta State.\n\nJoin here: https://hyperlocal.ng`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ── Scroll reveal ─────────────────────────────────────────────────────────
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// ── Nav scroll effect ─────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.querySelector('nav').style.borderBottomColor =
+    window.scrollY > 20 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)';
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How It Works — Hyperlocal</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0A0F0D;--black2:#111711;--black3:#182018;
+  --green:#00E87A;--green-d:#00b85f;--green-dim:rgba(0,232,122,0.08);
+  --amber:#F5A623;--white:#F0F4F1;--muted:#7A8C7E;
+  --border:rgba(255,255,255,0.08);--r:14px;
+}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--black);color:var(--white);overflow-x:hidden;line-height:1.6}
+a{text-decoration:none;color:inherit}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:64px;background:rgba(10,15,13,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-logo{font-size:1.1rem;font-weight:900;letter-spacing:-0.02em;color:var(--white)}
+.nav-logo span{color:var(--green)}
+.nav-links{display:flex;align-items:center;gap:2rem}
+.nav-links a{font-size:0.85rem;color:var(--muted);transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--white)}
+.nav-cta{background:var(--green);color:var(--black);padding:9px 22px;border-radius:30px;font-size:0.85rem;font-weight:800;border:none;cursor:pointer;transition:background .2s}
+.nav-cta:hover{background:var(--green-d)}
+
+/* HERO */
+.page-hero{padding:9rem 4rem 6rem;text-align:center;position:relative;overflow:hidden;background:var(--black2)}
+.page-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 70% at 50% 0%,rgba(0,232,122,0.07) 0%,transparent 70%)}
+.page-hero::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:50px 50px}
+.hero-inner{position:relative;z-index:1;max-width:700px;margin:0 auto}
+.eyebrow{display:inline-block;font-size:0.7rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);background:rgba(0,232,122,0.1);border:1px solid rgba(0,232,122,0.2);padding:5px 14px;border-radius:30px;margin-bottom:1.5rem}
+.page-hero h1{font-size:clamp(2.8rem,5vw,4.5rem);font-weight:900;letter-spacing:-0.04em;line-height:1.0;margin-bottom:1.25rem}
+.page-hero h1 span{color:var(--green)}
+.page-hero p{font-size:1.05rem;color:var(--muted);line-height:1.75;max-width:500px;margin:0 auto}
+
+/* PROGRESS BAR */
+.progress-bar{background:var(--black);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0 4rem;position:sticky;top:64px;z-index:100}
+.progress-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:0;position:relative}
+.prog-step{display:flex;flex-direction:column;align-items:center;padding:1rem 0;gap:4px;flex:1;cursor:pointer;position:relative}
+.prog-num{width:30px;height:30px;border-radius:50%;background:var(--black3);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;color:var(--muted);transition:all .3s;z-index:1}
+.prog-label{font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:0.04em;transition:color .3s;text-align:center}
+.prog-step.done .prog-num{background:var(--green);border-color:var(--green);color:var(--black)}
+.prog-step.done .prog-label{color:var(--white)}
+.prog-step.active .prog-num{background:var(--green);border-color:var(--green);color:var(--black);box-shadow:0 0 16px rgba(0,232,122,0.4)}
+.prog-step.active .prog-label{color:var(--green)}
+.prog-line{flex:1;height:1.5px;background:var(--border);margin:0 -1px;margin-bottom:1rem;transition:background .4s}
+.prog-line.done{background:var(--green)}
+
+/* MAIN CONTENT */
+.content{max-width:1000px;margin:0 auto;padding:5rem 4rem}
+
+/* STEP SECTIONS */
+.step-section{margin-bottom:6rem;opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.step-section.visible{opacity:1;transform:translateY(0)}
+.step-header{display:flex;align-items:flex-start;gap:2rem;margin-bottom:3rem}
+.step-badge{min-width:72px;height:72px;border-radius:20px;background:var(--green-dim);border:1px solid rgba(0,232,122,0.2);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:900;color:var(--green);letter-spacing:-0.04em;flex-shrink:0}
+.step-title-wrap h2{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:900;letter-spacing:-0.04em;color:var(--white);margin-bottom:0.5rem}
+.step-title-wrap p{font-size:1rem;color:var(--muted);line-height:1.7;max-width:560px}
+
+/* FEATURE GRID */
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.feature-card{background:var(--black2);padding:1.75rem;transition:background .2s}
+.feature-card:hover{background:var(--black3)}
+.feat-icon{font-size:1.4rem;margin-bottom:0.75rem}
+.feature-card h4{font-size:0.9rem;font-weight:800;letter-spacing:-0.02em;color:var(--white);margin-bottom:0.4rem}
+.feature-card p{font-size:0.82rem;color:var(--muted);line-height:1.6}
+
+/* VISUAL MOCKUP STRIP */
+.mockup-strip{display:flex;gap:1rem;margin-top:2rem;overflow-x:auto;padding-bottom:0.5rem;scrollbar-width:none}
+.mockup-strip::-webkit-scrollbar{display:none}
+.mockup-screen{min-width:200px;background:var(--black3);border:1px solid var(--border);border-radius:16px;padding:1.25rem;flex-shrink:0}
+.screen-bar{height:6px;border-radius:3px;background:var(--border);margin-bottom:0.75rem}
+.screen-bar.green{background:var(--green);width:60%}
+.screen-bar.amber{background:var(--amber);width:40%}
+.screen-title{font-size:0.72rem;font-weight:800;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.5rem}
+.screen-item{height:32px;background:var(--black2);border-radius:8px;margin-bottom:6px;border:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:8px}
+.screen-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.screen-dot.amber{background:var(--amber)}
+.screen-text{font-size:0.7rem;color:var(--muted)}
+.screen-btn{height:32px;background:var(--green);border-radius:8px;margin-top:10px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:var(--black)}
+
+/* STEP DIVIDER */
+.step-divider{display:flex;align-items:center;gap:1rem;margin-bottom:3rem;opacity:0.3}
+.step-divider::before,.step-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.step-divider span{font-size:0.75rem;color:var(--muted);white-space:nowrap;font-weight:600}
+
+/* FAQ */
+.faq-section{background:var(--black2);border-top:1px solid var(--border)}
+.faq-inner{max-width:700px;margin:0 auto;padding:5rem 4rem}
+.faq-item{border-bottom:1px solid var(--border);cursor:pointer}
+.faq-q{display:flex;justify-content:space-between;align-items:center;padding:1.25rem 0;font-size:0.95rem;font-weight:700;color:var(--white);gap:1rem}
+.faq-toggle{color:var(--green);font-size:1.2rem;font-weight:300;transition:transform .3s;flex-shrink:0}
+.faq-a{font-size:0.88rem;color:var(--muted);line-height:1.75;padding-bottom:1.25rem;display:none}
+.faq-item.open .faq-toggle{transform:rotate(45deg)}
+.faq-item.open .faq-a{display:block}
+
+/* CTA */
+.bottom-cta{padding:6rem 4rem;text-align:center;background:var(--black)}
+.bottom-cta h2{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;letter-spacing:-0.04em;margin-bottom:1rem}
+.bottom-cta h2 span{color:var(--green)}
+.bottom-cta p{color:var(--muted);margin-bottom:2rem;font-size:1rem}
+.btn-green{background:var(--green);color:var(--black);padding:14px 36px;border-radius:50px;font-size:0.95rem;font-weight:900;border:none;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-green:hover{background:var(--green-d);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,232,122,0.3)}
+
+/* FOOTER */
+footer{background:var(--black);border-top:1px solid var(--border);padding:2.5rem 4rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-logo{font-size:1rem;font-weight:900}.footer-logo span{color:var(--green)}
+footer p{font-size:0.78rem;color:var(--muted)}
+footer a{color:var(--muted);transition:color .2s}
+footer a:hover{color:var(--green)}
+
+.hamburger {
+  display: none;
+  flex-direction: column; justify-content: center; gap: 5px;
+  width: 36px; height: 36px;
+  background: transparent; border: none; cursor: pointer;
+  z-index: 301; padding: 0;
+}
+.hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--white); border-radius: 2px;
+  transition: transform .3s ease, opacity .3s ease;
+  transform-origin: center;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.mobile-menu {
+  position: fixed; inset: 64px 0 0 0; z-index: 299;
+  background: rgba(10,15,13,0.98);
+  backdrop-filter: blur(20px);
+  display: flex; flex-direction: column;
+  padding: 2rem 1.5rem; gap: 0.5rem;
+  transform: translateY(-100%); opacity: 0; visibility: hidden;
+  transition: transform .35s ease, opacity .35s ease, visibility .35s;
+}
+.mobile-menu.open { transform: translateY(0); opacity: 1; visibility: visible; }
+.mobile-menu a {
+  font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em;
+  color: var(--white); padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border); transition: color .2s;
+}
+.mobile-menu a.active, .mobile-menu a:hover { color: var(--green); }
+.mobile-menu .nav-cta { margin-top: 1.5rem; padding: 14px; text-align: center; font-size: 1rem; }
+body.menu-open { overflow: hidden; }
+
+@media(max-width:768px){
+  .page-hero,.content,.faq-inner,.bottom-cta{padding-left:1.5rem;padding-right:1.5rem}
+  .progress-bar{padding:0 1.5rem}
+  .prog-label{display:none}
+  .feature-grid{grid-template-columns:1fr}
+  .step-header{flex-direction:column;gap:1rem}
+  .nav-links{display:none}
+  .hamburger{display:flex}
+  footer{padding:2rem 1.5rem;flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">HYPER<span>LOCAL</span></div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="how-it-works.html" class="active">How it works</a>
+    <a href="restaurants.html">Restaurants</a>
+    <a href="cities.html">Cities</a>
+  </div>
+  <button class="nav-cta" onclick="window.location='index.html#signup-card'">Join waitlist</button>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">Home</a>
+  <a href="how-it-works.html" class="active">How it works</a>
+  <a href="restaurants.html">Restaurants</a>
+  <a href="cities.html">Cities</a>
+  <button class="nav-cta" onclick="window.location='index.html#signup-card'">Join waitlist</button>
+</div>
+
+<!-- HERO -->
+<div class="page-hero">
+  <div class="hero-inner">
+    <div class="eyebrow">How it works</div>
+    <h1>From craving to<br><span>doorstep in 4 steps.</span></h1>
+    <p>No downloads yet. No accounts yet. But here's exactly how Hyperlocal will work when we launch in Abraka and Warri.</p>
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar" id="progressBar">
+  <div class="progress-inner">
+    <div class="prog-step active" onclick="scrollToStep(1)" id="ps1">
+      <div class="prog-num">1</div>
+      <div class="prog-label">Browse</div>
+    </div>
+    <div class="prog-line" id="pl1"></div>
+    <div class="prog-step" onclick="scrollToStep(2)" id="ps2">
+      <div class="prog-num">2</div>
+      <div class="prog-label">Order</div>
+    </div>
+    <div class="prog-line" id="pl2"></div>
+    <div class="prog-step" onclick="scrollToStep(3)" id="ps3">
+      <div class="prog-num">3</div>
+      <div class="prog-label">Pay</div>
+    </div>
+    <div class="prog-line" id="pl3"></div>
+    <div class="prog-step" onclick="scrollToStep(4)" id="ps4">
+      <div class="prog-num">4</div>
+      <div class="prog-label">Track</div>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- STEP 1 -->
+  <div class="step-section" id="step1" data-step="1">
+    <div class="step-header">
+      <div class="step-badge">01</div>
+      <div class="step-title-wrap">
+        <h2>Browse local restaurants</h2>
+        <p>Open the Hyperlocal app and instantly see every restaurant near you — with real menus, real photos, and real prices. Filter by food type, distance, or rating.</p>
+      </div>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feat-icon">🗺️</div>
+        <h4>Location-aware discovery</h4>
+        <p>The app shows restaurants sorted by proximity. Closer restaurants appear first — faster delivery guaranteed.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">📋</div>
+        <h4>Digital menus with photos</h4>
+        <p>Scroll through every dish with descriptions, allergen info, and high-quality photos. No more calling to ask what's available.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">⭐</div>
+        <h4>Real customer ratings</h4>
+        <p>Every rating comes from verified Hyperlocal orders. No fake reviews. Just honest feedback from people in your community.</p>
+      </div>
+    </div>
+    <div class="mockup-strip">
+      <div class="mockup-screen">
+        <div class="screen-title">Nearby restaurants</div>
+        <div class="screen-bar green"></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">🍦 Coldscoop · 1.2km</div></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">🍽️ Charissa · 2.4km</div></div>
+        <div class="screen-item"><div class="screen-dot amber"></div><div class="screen-text">🔜 More coming…</div></div>
+      </div>
+      <div class="mockup-screen">
+        <div class="screen-title">Coldscoop menu</div>
+        <div class="screen-bar amber"></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">🍦 Vanilla Scoop · ₦800</div></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">🍓 Strawberry Sundae · ₦1,200</div></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">🥤 Chapman · ₦700</div></div>
+        <div class="screen-btn">Add to cart</div>
+      </div>
+      <div class="mockup-screen">
+        <div class="screen-title">Filter & search</div>
+        <div class="screen-bar green" style="width:80%"></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">🔍 Search "jollof"</div></div>
+        <div class="screen-item"><div class="screen-dot amber"></div><div class="screen-text">⭐ Rating: 4.5+</div></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">📍 Within 3km</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-divider"><span>↓ Next step</span></div>
+
+  <!-- STEP 2 -->
+  <div class="step-section" id="step2" data-step="2">
+    <div class="step-header">
+      <div class="step-badge">02</div>
+      <div class="step-title-wrap">
+        <h2>Build your order</h2>
+        <p>Tap to add items, adjust quantities, add notes for the kitchen, and review your full cart before checkout. The whole thing takes under a minute.</p>
+      </div>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feat-icon">🛒</div>
+        <h4>Smart cart</h4>
+        <p>Add from multiple items within the same restaurant. The cart updates in real time — subtotal, delivery fee, and grand total always visible.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">📝</div>
+        <h4>Kitchen notes</h4>
+        <p>Add special instructions — "extra spicy", "no onions", "separate the sauce". The restaurant sees your note with every order.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">⏱️</div>
+        <h4>Estimated delivery time</h4>
+        <p>Before you confirm, you'll see the exact estimated delivery window based on your distance and the restaurant's current queue.</p>
+      </div>
+    </div>
+    <div class="mockup-strip">
+      <div class="mockup-screen">
+        <div class="screen-title">Your cart</div>
+        <div class="screen-bar amber" style="width:55%"></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">Strawberry Sundae ×1</div></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">Chapman ×2</div></div>
+        <div class="screen-item"><div class="screen-dot amber"></div><div class="screen-text">Meat Pie ×1</div></div>
+        <div class="screen-btn" style="background:var(--amber)">Checkout · ₦3,600</div>
+      </div>
+      <div class="mockup-screen">
+        <div class="screen-title">Delivery address</div>
+        <div class="screen-bar green"></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">📍 No. 5 Abraka Road</div></div>
+        <div class="screen-item"><div class="screen-dot amber"></div><div class="screen-text">⏱ Est. 28 minutes</div></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">🛵 Rider assigned</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-divider"><span>↓ Next step</span></div>
+
+  <!-- STEP 3 -->
+  <div class="step-section" id="step3" data-step="3">
+    <div class="step-header">
+      <div class="step-badge">03</div>
+      <div class="step-title-wrap">
+        <h2>Pay the way you already pay</h2>
+        <p>No new payment methods to learn. We support every way Nigerians actually pay — card, mobile money, bank transfer, or cash at the door.</p>
+      </div>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feat-icon">📱</div>
+        <h4>Opay & Moniepoint</h4>
+        <p>Pay directly from your Opay or Moniepoint wallet in seconds. No card details needed — just your PIN.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">🏦</div>
+        <h4>Bank transfer</h4>
+        <p>Generate a unique account number for your order and transfer from any Nigerian bank. Confirmed instantly.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">💵</div>
+        <h4>Cash on delivery</h4>
+        <p>Not ready to pay digitally yet? Select cash on delivery and pay your rider when your food arrives.</p>
+      </div>
+    </div>
+    <div class="mockup-strip">
+      <div class="mockup-screen">
+        <div class="screen-title">Payment method</div>
+        <div class="screen-bar green"></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">📱 Opay Wallet</div></div>
+        <div class="screen-item"><div class="screen-dot amber"></div><div class="screen-text">💳 Moniepoint</div></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">🏦 Bank Transfer</div></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">💵 Cash on Delivery</div></div>
+        <div class="screen-btn">Confirm · ₦4,100</div>
+      </div>
+      <div class="mockup-screen">
+        <div class="screen-title">Order confirmed!</div>
+        <div class="screen-bar green" style="width:100%"></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">✅ Payment received</div></div>
+        <div class="screen-item"><div class="screen-dot amber"></div><div class="screen-text">🔔 Restaurant notified</div></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">🛵 Rider assigned</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-divider"><span>↓ Final step</span></div>
+
+  <!-- STEP 4 -->
+  <div class="step-section" id="step4" data-step="4">
+    <div class="step-header">
+      <div class="step-badge" style="color:var(--amber);background:rgba(245,166,35,0.08);border-color:rgba(245,166,35,0.2)">04</div>
+      <div class="step-title-wrap">
+        <h2>Track your delivery live</h2>
+        <p>Watch your rider move toward you on a real map. Get push notifications at every stage. Know exactly when to open the door.</p>
+      </div>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feat-icon">🗺️</div>
+        <h4>Live map tracking</h4>
+        <p>Your rider's location updates every 10 seconds on a live map. Watch the pin move closer in real time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">🔔</div>
+        <h4>Status notifications</h4>
+        <p>Push notifications at every milestone — order confirmed, restaurant preparing, rider picked up, arriving now.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon">📞</div>
+        <h4>Contact your rider</h4>
+        <p>Need to give directions or update the drop-off point? Tap to call or WhatsApp your rider directly from the app.</p>
+      </div>
+    </div>
+    <div class="mockup-strip">
+      <div class="mockup-screen">
+        <div class="screen-title">Live tracking</div>
+        <div style="height:80px;background:var(--black2);border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;border:1px solid var(--border)">🗺️</div>
+        <div class="screen-item"><div class="screen-dot" style="background:var(--amber)"></div><div class="screen-text">🛵 Rider · 4 mins away</div></div>
+        <div class="screen-btn">Call rider</div>
+      </div>
+      <div class="mockup-screen">
+        <div class="screen-title">Notifications</div>
+        <div class="screen-bar green"></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">✅ Order confirmed</div></div>
+        <div class="screen-item"><div class="screen-dot"></div><div class="screen-text">👨‍🍳 Restaurant cooking</div></div>
+        <div class="screen-item"><div class="screen-dot amber"></div><div class="screen-text">🛵 Rider on the way!</div></div>
+        <div class="screen-item"><div class="screen-dot" style="background:var(--amber);animation:blink 1s infinite"></div><div class="screen-text">📍 Arriving in 4 min</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FAQ -->
+<div class="faq-section">
+  <div class="faq-inner">
+    <div class="eyebrow" style="margin-bottom:1.5rem">Common questions</div>
+    <h2 style="font-size:1.8rem;font-weight:900;letter-spacing:-0.04em;margin-bottom:2.5rem">Got questions?<br><span style="color:var(--green)">We've got answers.</span></h2>
+
+    <div class="faq-item open">
+      <div class="faq-q" onclick="toggleFaq(this)">When is Hyperlocal launching? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">We're in the final stages of development and pilot preparation. Join the waitlist and you'll be among the very first to know — and to order — when we go live in Abraka and Warri.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Do I need to download an app? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">At launch, you'll be able to order via our mobile app (iOS and Android) or through our website. During the early pilot phase, some orders may be placed via WhatsApp while the full app is being finalised.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">How much does delivery cost? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">A flat ₦500 delivery fee on every order. No surge pricing. No hidden charges. What you see in your cart is exactly what you pay.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">What if something is wrong with my order? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Contact us via WhatsApp within 30 minutes of delivery and we'll sort it. Wrong item, missing item, or quality issue — we'll make it right, either with a replacement or a credit to your account.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Can I schedule a delivery for later? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Scheduled deliveries are on our roadmap and will be available in Phase 2 of the platform. At launch, all deliveries are on-demand — placed now, delivered as fast as possible.</div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM CTA -->
+<div class="bottom-cta">
+  <h2>Ready to order?<br><span>Join the waitlist.</span></h2>
+  <p>Be first when we launch in Abraka and Warri.</p>
+  <button class="btn-green" onclick="window.location='index.html#signup-card'">Get early access →</button>
+</div>
+
+<footer>
+  <div class="footer-logo">HYPER<span>LOCAL</span></div>
+  <p>Built by Jeremiah Omonefe · Abraka & Warri, Delta State</p>
+  <p><a href="https://wa.me/2348000000000">WhatsApp</a> · <a href="mailto:hello@hyperlocal.ng">hello@hyperlocal.ng</a></p>
+</footer>
+
+<script>
+// ── Hamburger menu ────────────────────────────────────────────────────────
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+function toggleMenu() {
+  const isOpen = mobileMenu.classList.toggle('open');
+  hamburger.classList.toggle('open', isOpen);
+  hamburger.setAttribute('aria-expanded', isOpen);
+  document.body.classList.toggle('menu-open', isOpen);
+}
+function closeMenu() {
+  mobileMenu.classList.remove('open');
+  hamburger.classList.remove('open');
+  hamburger.setAttribute('aria-expanded', 'false');
+  document.body.classList.remove('menu-open');
+}
+hamburger.addEventListener('click', toggleMenu);
+mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+window.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+window.addEventListener('resize', () => { if (window.innerWidth > 900) closeMenu(); });
+
+// Progress bar scroll tracking
+const steps = [1,2,3,4];
+function getStepTop(n){
+  const el = document.getElementById('step'+n);
+  return el ? el.getBoundingClientRect().top + window.scrollY - 200 : 9999;
+}
+function updateProgress(){
+  const y = window.scrollY;
+  let active = 1;
+  steps.forEach(n => { if(y >= getStepTop(n)) active = n; });
+  steps.forEach(n => {
+    const ps = document.getElementById('ps'+n);
+    const pl = document.getElementById('pl'+n);
+    ps.className = 'prog-step' + (n < active ? ' done' : n === active ? ' active' : '');
+    if(pl) pl.className = 'prog-line' + (n < active ? ' done' : '');
+  });
+}
+window.addEventListener('scroll', updateProgress);
+updateProgress();
+
+function scrollToStep(n){
+  const el = document.getElementById('step'+n);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// Reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, {threshold:0.1});
+document.querySelectorAll('.step-section').forEach(el => obs.observe(el));
+
+// FAQ
+function toggleFaq(el){
+  const item = el.parentElement;
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if(!wasOpen) item.classList.add('open');
+}
+</script>
+</body>
+</html>

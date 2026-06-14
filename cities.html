@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cities — Hyperlocal</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0A0F0D;--black2:#111711;--black3:#182018;
+  --green:#00E87A;--green-d:#00b85f;
+  --amber:#F5A623;--white:#F0F4F1;--muted:#7A8C7E;
+  --border:rgba(255,255,255,0.08);
+}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--black);color:var(--white);overflow-x:hidden;line-height:1.6}
+a{text-decoration:none;color:inherit}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:64px;background:rgba(10,15,13,0.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-logo{font-size:1.1rem;font-weight:900;letter-spacing:-0.02em}.nav-logo span{color:var(--green)}
+.nav-links{display:flex;align-items:center;gap:2rem}
+.nav-links a{font-size:0.85rem;color:var(--muted);transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--white)}
+.nav-cta{background:var(--green);color:var(--black);padding:9px 22px;border-radius:30px;font-size:0.85rem;font-weight:800;border:none;cursor:pointer;transition:background .2s}
+.nav-cta:hover{background:var(--green-d)}
+
+/* HERO */
+.page-hero{padding:9rem 4rem 6rem;position:relative;overflow:hidden;background:var(--black2);text-align:center}
+.page-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 100%,rgba(0,232,122,0.06) 0%,transparent 70%)}
+.page-hero::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:50px 50px}
+.hero-inner{position:relative;z-index:1;max-width:640px;margin:0 auto}
+.eyebrow{display:inline-block;font-size:0.7rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);background:rgba(0,232,122,0.1);border:1px solid rgba(0,232,122,0.2);padding:5px 14px;border-radius:30px;margin-bottom:1.5rem}
+.page-hero h1{font-size:clamp(2.8rem,5vw,4.2rem);font-weight:900;letter-spacing:-0.04em;line-height:1.0;margin-bottom:1.25rem}
+.page-hero h1 span{color:var(--green)}
+.page-hero p{font-size:1rem;color:var(--muted);line-height:1.75;margin-bottom:2.5rem}
+
+/* PHASE TABS */
+.phase-tabs{background:var(--black);border-bottom:1px solid var(--border);padding:0 4rem;position:sticky;top:64px;z-index:100}
+.phase-tabs-inner{max-width:1100px;margin:0 auto;display:flex;gap:0}
+.phase-tab{padding:1rem 1.5rem;font-size:0.85rem;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.phase-tab:hover{color:var(--white)}
+.phase-tab.active{color:var(--green);border-bottom-color:var(--green)}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:4rem 4rem 6rem}
+
+/* PHASE PANEL */
+.phase-panel{display:none}
+.phase-panel.active{display:block}
+
+/* PHASE HERO CARD */
+.phase-card{background:var(--black2);border:1px solid var(--border);border-radius:24px;padding:2.5rem;margin-bottom:2.5rem;display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:start}
+.pc-phase{font-size:0.7rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem}
+.pc-phase.launch{color:var(--green)}
+.pc-phase.next{color:var(--amber)}
+.pc-phase.future{color:var(--muted)}
+.pc-h{font-size:1.8rem;font-weight:900;letter-spacing:-0.04em;color:var(--white);margin-bottom:0.75rem}
+.pc-desc{font-size:0.9rem;color:var(--muted);line-height:1.7;max-width:500px;margin-bottom:1.5rem}
+.pc-timeline{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--muted)}
+.pc-timeline strong{color:var(--white)}
+.pc-badge{padding:6px 16px;border-radius:30px;font-size:0.78rem;font-weight:800;white-space:nowrap;align-self:flex-start}
+.badge-launch{background:rgba(0,232,122,0.1);color:var(--green);border:1px solid rgba(0,232,122,0.25)}
+.badge-next{background:rgba(245,166,35,0.1);color:var(--amber);border:1px solid rgba(245,166,35,0.25)}
+.badge-future{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border)}
+
+/* CITY CARDS GRID */
+.cities-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;margin-bottom:3rem}
+.city-card{background:var(--black2);border:1px solid var(--border);border-radius:20px;overflow:hidden;transition:transform .2s,border-color .2s;cursor:pointer}
+.city-card:hover{transform:translateY(-4px)}
+.city-card.live:hover{border-color:rgba(0,232,122,0.3)}
+.city-card.next:hover{border-color:rgba(245,166,35,0.3)}
+.cc-top{height:120px;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;border-bottom:1px solid var(--border)}
+.cc-top.live-bg{background:linear-gradient(135deg,#0d2018,var(--black3))}
+.cc-top.next-bg{background:linear-gradient(135deg,#1a1500,var(--black3))}
+.cc-top.future-bg{background:var(--black3)}
+.cc-status{position:absolute;top:10px;right:10px;font-size:0.65rem;font-weight:800;padding:3px 9px;border-radius:20px}
+.cc-status.live{background:rgba(0,232,122,0.12);color:var(--green);border:1px solid rgba(0,232,122,0.2)}
+.cc-status.next{background:rgba(245,166,35,0.12);color:var(--amber);border:1px solid rgba(245,166,35,0.2)}
+.cc-status.future{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border)}
+.cc-body{padding:1.5rem}
+.cc-name{font-size:1.2rem;font-weight:900;letter-spacing:-0.03em;color:var(--white);margin-bottom:4px}
+.cc-state{font-size:0.78rem;color:var(--muted);margin-bottom:1rem}
+.cc-facts{display:flex;flex-direction:column;gap:6px;margin-bottom:1.25rem}
+.cc-fact{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--muted)}
+.cc-fact strong{color:var(--white)}
+.cc-action{width:100%;padding:10px;border-radius:10px;font-size:0.82rem;font-weight:800;border:none;cursor:pointer;transition:all .2s}
+.cc-action.live-btn{background:var(--green);color:var(--black)}
+.cc-action.live-btn:hover{background:var(--green-d)}
+.cc-action.next-btn{background:rgba(245,166,35,0.1);color:var(--amber);border:1px solid rgba(245,166,35,0.25)}
+.cc-action.next-btn:hover{background:rgba(245,166,35,0.2)}
+.cc-action.future-btn{background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border);cursor:default}
+
+/* EXPANSION ROADMAP */
+.roadmap{background:var(--black2);border:1px solid var(--border);border-radius:24px;padding:2.5rem;margin-bottom:3rem}
+.roadmap h3{font-size:1.2rem;font-weight:900;letter-spacing:-0.03em;margin-bottom:2rem}
+.roadmap h3 span{color:var(--green)}
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:1.5rem;position:relative}
+.tl-item:not(:last-child)::after{content:'';position:absolute;left:11px;top:28px;bottom:0;width:1.5px;background:var(--border)}
+.tl-dot{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;margin-top:2px;z-index:1}
+.tl-dot.done{background:var(--green);color:var(--black)}
+.tl-dot.active{background:var(--green);color:var(--black);box-shadow:0 0 12px rgba(0,232,122,0.4)}
+.tl-dot.pending{background:var(--black3);border:1.5px solid var(--border);color:var(--muted)}
+.tl-content{padding-bottom:2rem}
+.tl-when{font-size:0.7rem;font-weight:700;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px}
+.tl-title{font-size:1rem;font-weight:800;color:var(--white);margin-bottom:4px}
+.tl-desc{font-size:0.83rem;color:var(--muted);line-height:1.6}
+.tl-cities{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tl-city{font-size:0.7rem;font-weight:600;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)}
+.tl-city.active{background:rgba(0,232,122,0.1);color:var(--green);border-color:rgba(0,232,122,0.2)}
+
+/* DELTA MAP VISUAL */
+.map-visual{background:var(--black3);border:1px solid var(--border);border-radius:20px;padding:2rem;text-align:center;margin-bottom:2.5rem;position:relative;overflow:hidden}
+.map-visual::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(0,232,122,0.05) 0%,transparent 70%)}
+.map-title{font-size:0.78rem;font-weight:700;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:1.5rem}
+.map-pins{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;position:relative;z-index:1}
+.pin{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pin-dot{width:14px;height:14px;border-radius:50%;animation:pulse 2s infinite}
+.pin-dot.live{background:var(--green);box-shadow:0 0 0 0 rgba(0,232,122,0.4)}
+.pin-dot.soon{background:var(--amber);box-shadow:0 0 0 0 rgba(245,166,35,0.4)}
+.pin-dot.future{background:rgba(255,255,255,0.2)}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+.pin-label{font-size:0.75rem;font-weight:700;color:var(--white)}
+.pin-sub{font-size:0.65rem;color:var(--muted)}
+.map-legend{display:flex;justify-content:center;gap:1.5rem;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--muted)}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+
+/* CTA */
+.notify-cta{background:linear-gradient(135deg,var(--black3) 0%,#0d2018 100%);border:1px solid rgba(0,232,122,0.15);border-radius:24px;padding:3rem;text-align:center}
+.notify-cta h3{font-size:1.6rem;font-weight:900;letter-spacing:-0.04em;margin-bottom:0.75rem}
+.notify-cta h3 span{color:var(--green)}
+.notify-cta p{font-size:0.9rem;color:var(--muted);margin-bottom:2rem;line-height:1.7;max-width:440px;margin-left:auto;margin-right:auto}
+.notify-form{display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap}
+.notify-input{padding:12px 18px;background:var(--black2);border:1px solid var(--border);border-radius:50px;font-size:0.88rem;color:var(--white);outline:none;width:220px;transition:border-color .2s}
+.notify-input:focus{border-color:rgba(0,232,122,0.4)}
+.notify-input::placeholder{color:#3d4d41}
+.notify-btn{background:var(--green);color:var(--black);padding:12px 28px;border-radius:50px;font-size:0.88rem;font-weight:900;border:none;cursor:pointer;transition:all .2s;white-space:nowrap}
+.notify-btn:hover{background:var(--green-d);transform:translateY(-1px)}
+
+footer{background:var(--black);border-top:1px solid var(--border);padding:2.5rem 4rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-logo{font-size:1rem;font-weight:900}.footer-logo span{color:var(--green)}
+footer p{font-size:0.78rem;color:var(--muted)}
+footer a{color:var(--muted);transition:color .2s}
+footer a:hover{color:var(--green)}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:none}
+
+@media(max-width:768px){
+  .page-hero,.main,.phase-tabs{padding-left:1.5rem;padding-right:1.5rem}
+  .phase-card{grid-template-columns:1fr}
+  .nav-links{display:none}
+  footer{padding:2rem 1.5rem;flex-direction:column;text-align:center}
+  .notify-form{flex-direction:column;align-items:center}
+  .notify-input{width:100%;max-width:300px}
+}
+
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">HYPER<span>LOCAL</span></div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="how-it-works.html">How it works</a>
+    <a href="restaurants.html">Restaurants</a>
+    <a href="cities.html" class="active">Cities</a>
+  </div>
+  <button class="nav-cta" onclick="window.location='index.html#signup-card'">Join waitlist</button>
+</nav>
+
+<div class="page-hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Where we deliver</div>
+    <h1>Starting here.<br><span>Scaling fast.</span></h1>
+    <p>We launch where we can deliver the best service — then expand city by city. Every new city gets the same high standard: fast delivery, local restaurants, Nigerian-first payments.</p>
+  </div>
+</div>
+
+<!-- PHASE TABS -->
+<div class="phase-tabs">
+  <div class="phase-tabs-inner">
+    <div class="phase-tab active" onclick="switchPhase('launch',this)">● Phase 1 — Launching</div>
+    <div class="phase-tab" onclick="switchPhase('next',this)">Phase 2 — Expanding</div>
+    <div class="phase-tab" onclick="switchPhase('future',this)">Phase 3 — Scaling</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- PHASE 1 -->
+  <div class="phase-panel active" id="panel-launch">
+    <div class="phase-card reveal">
+      <div>
+        <div class="pc-phase launch">● Phase 1 — Pilot launch</div>
+        <div class="pc-h">Abraka & Warri</div>
+        <div class="pc-desc">Our home base. We're launching here first because we know these communities personally — the streets, the restaurants, and the people. We'll get it right here before expanding anywhere else.</div>
+        <div class="pc-timeline">⏱ <strong>Now – Month 3</strong> &nbsp;·&nbsp; Operational · Platform live · Riders recruited</div>
+      </div>
+      <span class="pc-badge badge-launch">Launching soon</span>
+    </div>
+
+    <div class="map-visual reveal">
+      <div class="map-title">Delta State — Launch cities</div>
+      <div class="map-pins">
+        <div class="pin"><div class="pin-dot live"></div><div class="pin-label">Abraka</div><div class="pin-sub">Phase 1</div></div>
+        <div class="pin"><div class="pin-dot live"></div><div class="pin-label">Warri</div><div class="pin-sub">Phase 1</div></div>
+        <div class="pin"><div class="pin-dot soon"></div><div class="pin-label">Asaba</div><div class="pin-sub">Phase 2</div></div>
+        <div class="pin"><div class="pin-dot soon"></div><div class="pin-label">Sapele</div><div class="pin-sub">Phase 2</div></div>
+        <div class="pin"><div class="pin-dot future"></div><div class="pin-label">Ughelli</div><div class="pin-sub">Phase 3</div></div>
+        <div class="pin"><div class="pin-dot future"></div><div class="pin-label">Benin</div><div class="pin-sub">Phase 3</div></div>
+      </div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Launching now</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Phase 2</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.2)"></div>Phase 3</div>
+      </div>
+    </div>
+
+    <div class="cities-grid reveal">
+      <div class="city-card live">
+        <div class="cc-top live-bg">🌿<div class="cc-status live">● Launching soon</div></div>
+        <div class="cc-body">
+          <div class="cc-name">Abraka</div>
+          <div class="cc-state">Delta State, Nigeria</div>
+          <div class="cc-facts">
+            <div class="cc-fact">🛵 Delivery time: <strong>25–35 min</strong></div>
+            <div class="cc-fact">💳 Delivery fee: <strong>₦500 flat</strong></div>
+            <div class="cc-fact">🍽 Restaurants: <strong>Coldscoop + more</strong></div>
+            <div class="cc-fact">📱 Payment: <strong>Opay, Bank, Cash</strong></div>
+          </div>
+          <button class="cc-action live-btn" onclick="window.location='hyperlocal_landing.html#signup-card'">Join Abraka waitlist →</button>
+        </div>
+      </div>
+      <div class="city-card live">
+        <div class="cc-top live-bg">🌊<div class="cc-status live">● Launching soon</div></div>
+        <div class="cc-body">
+          <div class="cc-name">Warri</div>
+          <div class="cc-state">Delta State, Nigeria</div>
+          <div class="cc-facts">
+            <div class="cc-fact">🛵 Delivery time: <strong>30–40 min</strong></div>
+            <div class="cc-fact">💳 Delivery fee: <strong>₦500 flat</strong></div>
+            <div class="cc-fact">🍽 Restaurants: <strong>Charissa + more</strong></div>
+            <div class="cc-fact">📱 Payment: <strong>Opay, Moniepoint, Cash</strong></div>
+          </div>
+          <button class="cc-action live-btn" onclick="window.location='hyperlocal_landing.html#signup-card'">Join Warri waitlist →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="phase-panel" id="panel-next">
+    <div class="phase-card reveal">
+      <div>
+        <div class="pc-phase next">◎ Phase 2 — Expanding</div>
+        <div class="pc-h">Delta State expansion</div>
+        <div class="pc-desc">After proving the model in Abraka and Warri, we roll out to the next wave of Delta State cities — bringing the same fast, local experience to more communities.</div>
+        <div class="pc-timeline">⏱ <strong>Month 3 – Month 9</strong> &nbsp;·&nbsp; Following successful pilot validation</div>
+      </div>
+      <span class="pc-badge badge-next">Coming next</span>
+    </div>
+    <div class="cities-grid reveal">
+      <div class="city-card next">
+        <div class="cc-top next-bg">🏙️<div class="cc-status next">◎ Phase 2</div></div>
+        <div class="cc-body">
+          <div class="cc-name">Asaba</div>
+          <div class="cc-state">Delta State Capital</div>
+          <div class="cc-facts">
+            <div class="cc-fact">📊 Population: <strong>~250,000</strong></div>
+            <div class="cc-fact">🏪 Restaurant potential: <strong>High</strong></div>
+            <div class="cc-fact">📱 Smartphone penetration: <strong>High</strong></div>
+          </div>
+          <button class="cc-action next-btn" onclick="notifyCity('Asaba')">Notify me when live →</button>
+        </div>
+      </div>
+      <div class="city-card next">
+        <div class="cc-top next-bg">⛵<div class="cc-status next">◎ Phase 2</div></div>
+        <div class="cc-body">
+          <div class="cc-name">Sapele</div>
+          <div class="cc-state">Delta State, Nigeria</div>
+          <div class="cc-facts">
+            <div class="cc-fact">📊 Population: <strong>~180,000</strong></div>
+            <div class="cc-fact">🏪 Restaurant potential: <strong>Medium-high</strong></div>
+            <div class="cc-fact">📱 Smartphone penetration: <strong>Medium</strong></div>
+          </div>
+          <button class="cc-action next-btn" onclick="notifyCity('Sapele')">Notify me when live →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="phase-panel" id="panel-future">
+    <div class="phase-card reveal">
+      <div>
+        <div class="pc-phase future">○ Phase 3 — Scaling</div>
+        <div class="pc-h">Regional dominance</div>
+        <div class="pc-desc">Phase 3 takes Hyperlocal beyond Delta State into Edo and beyond. By this point, we have a proven playbook, a strong brand, and the infrastructure to enter new markets fast.</div>
+        <div class="pc-timeline">⏱ <strong>Month 9+</strong> &nbsp;·&nbsp; Scaling across Southern Nigeria</div>
+      </div>
+      <span class="pc-badge badge-future">In the pipeline</span>
+    </div>
+    <div class="cities-grid reveal">
+      <div class="city-card" style="border-color:rgba(255,255,255,0.05)">
+        <div class="cc-top future-bg">🏭<div class="cc-status future">○ Phase 3</div></div>
+        <div class="cc-body">
+          <div class="cc-name">Ughelli</div>
+          <div class="cc-state">Delta State, Nigeria</div>
+          <div class="cc-facts"><div class="cc-fact">📅 Target: <strong>Month 9–12</strong></div></div>
+          <button class="cc-action future-btn">Coming in Phase 3</button>
+        </div>
+      </div>
+      <div class="city-card" style="border-color:rgba(255,255,255,0.05)">
+        <div class="cc-top future-bg">🏯<div class="cc-status future">○ Phase 3</div></div>
+        <div class="cc-body">
+          <div class="cc-name">Benin City</div>
+          <div class="cc-state">Edo State, Nigeria</div>
+          <div class="cc-facts"><div class="cc-fact">📅 Target: <strong>Month 10–14</strong></div></div>
+          <button class="cc-action future-btn">Coming in Phase 3</button>
+        </div>
+      </div>
+      <div class="city-card" style="border-color:rgba(255,255,255,0.05)">
+        <div class="cc-top future-bg">🌆<div class="cc-status future">○ Phase 3</div></div>
+        <div class="cc-body">
+          <div class="cc-name">More cities</div>
+          <div class="cc-state">Southern Nigeria</div>
+          <div class="cc-facts"><div class="cc-fact">📅 Target: <strong>Year 2</strong></div></div>
+          <button class="cc-action future-btn">TBA</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE (always visible) -->
+  <div class="roadmap reveal">
+    <h3>Full expansion <span>timeline</span></h3>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot active">✓</div>
+        <div class="tl-content">
+          <div class="tl-when">Now – Month 3</div>
+          <div class="tl-title">Pilot launch</div>
+          <div class="tl-desc">Validate the model, onboard launch partners, recruit and train rider network, refine delivery operations.</div>
+          <div class="tl-cities"><span class="tl-city active">Abraka</span><span class="tl-city active">Warri</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot pending">2</div>
+        <div class="tl-content">
+          <div class="tl-when">Month 3 – Month 9</div>
+          <div class="tl-title">Delta State expansion</div>
+          <div class="tl-desc">Onboard 20–50 restaurants, scale rider network, launch loyalty programme and referral system.</div>
+          <div class="tl-cities"><span class="tl-city">Asaba</span><span class="tl-city">Sapele</span><span class="tl-city">+more</span></div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot pending">3</div>
+        <div class="tl-content">
+          <div class="tl-when">Month 9+</div>
+          <div class="tl-title">Regional scale</div>
+          <div class="tl-desc">Expand beyond Delta State. Introduce B2B catering, corporate accounts, and white-label partnerships.</div>
+          <div class="tl-cities"><span class="tl-city">Ughelli</span><span class="tl-city">Benin City</span><span class="tl-city">Southern Nigeria</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFY CTA -->
+  <div class="notify-cta reveal">
+    <h3>Not in your city yet?<br><span>We'll tell you when we are.</span></h3>
+    <p>Drop your phone number and we'll WhatsApp you the moment Hyperlocal launches near you.</p>
+    <div class="notify-form">
+      <input class="notify-input" type="tel" id="notifyPhone" placeholder="Your phone number" />
+      <input class="notify-input" type="text" id="notifyCity" placeholder="Your city" />
+      <button class="notify-btn" onclick="submitNotify()">Notify me →</button>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-logo">HYPER<span>LOCAL</span></div>
+  <p>Built by Jeremiah Omonefe · Abraka & Warri, Delta State</p>
+  <p><a href="https://wa.me/2348000000000">WhatsApp</a> · <a href="mailto:hello@hyperlocal.ng">hello@hyperlocal.ng</a></p>
+</footer>
+
+<script>
+function switchPhase(phase, tab){
+  document.querySelectorAll('.phase-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  document.querySelectorAll('.phase-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+phase).classList.add('active');
+}
+
+function notifyCity(city){
+  const msg = `Hi! I'd like to be notified when Hyperlocal launches in ${city}.`;
+  window.open('https://wa.me/2348000000000?text='+encodeURIComponent(msg),'_blank');
+}
+
+function submitNotify(){
+  const phone = document.getElementById('notifyPhone').value.trim();
+  const city  = document.getElementById('notifyCity').value.trim();
+  if(!phone || !city){ alert('Please enter your phone number and city.'); return; }
+  const msg = `*Hyperlocal City Alert*\n\nPhone: ${phone}\nCity: ${city}\n\nPlease notify me when Hyperlocal launches near me.`;
+  window.open('https://wa.me/2348000000000?text='+encodeURIComponent(msg),'_blank');
+}
+
+const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)} }),{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
