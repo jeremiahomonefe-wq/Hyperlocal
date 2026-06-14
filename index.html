@@ -7,6 +7,7 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
+  /* Dark theme (default) */
   --black:   #0A0F0D;
   --black2:  #111711;
   --black3:  #182018;
@@ -17,10 +18,39 @@
   --white:   #F0F4F1;
   --muted:   #7A8C7E;
   --border:  rgba(255,255,255,0.08);
+  --nav-bg:  rgba(10,15,13,0.85);
+  --menu-bg: rgba(10,15,13,0.98);
+  --grid-line: rgba(255,255,255,0.025);
+  --glow-green: rgba(0,232,122,0.07);
+  --glow-amber: rgba(245,166,35,0.05);
+  --card-shadow: rgba(0,0,0,0.4);
+  --card-shadow-lg: rgba(0,0,0,0.6);
+  --hairline: rgba(255,255,255,0.1);
   --r:       14px;
   --pad:     clamp(1.25rem, 4vw, 4rem);
   --section-y: clamp(3.5rem, 7vw, 6rem);
   --content-max: 1200px;
+  --on-accent: #0A0F0D;
+}
+[data-theme="light"] {
+  --black:   #FAFBF9;
+  --black2:  #FFFFFF;
+  --black3:  #F0F3F0;
+  --green:   #00C26A;
+  --green-d: #00A85C;
+  --amber:   #F5A623;
+  --amber-d: #c27d0e;
+  --white:   #0A0F0D;
+  --muted:   #66766A;
+  --border:  rgba(10,15,13,0.09);
+  --nav-bg:  rgba(250,251,249,0.85);
+  --menu-bg: rgba(250,251,249,0.98);
+  --grid-line: rgba(10,15,13,0.035);
+  --glow-green: rgba(0,194,106,0.08);
+  --glow-amber: rgba(245,166,35,0.06);
+  --card-shadow: rgba(10,15,13,0.10);
+  --card-shadow-lg: rgba(10,15,13,0.16);
+  --hairline: rgba(10,15,13,0.06);
 }
 html { scroll-behavior: smooth; }
 body {
@@ -29,6 +59,7 @@ body {
   color: var(--white);
   overflow-x: hidden;
   line-height: 1.6;
+  transition: background .3s ease, color .3s ease;
 }
 a { text-decoration: none; color: inherit; }
 
@@ -37,7 +68,7 @@ nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 300;
   display: flex; align-items: center; justify-content: center;
   padding: 0 var(--pad); height: 64px;
-  background: rgba(10,15,13,0.85);
+  background: var(--nav-bg);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   transition: border-color .2s;
@@ -46,6 +77,8 @@ nav {
   width: 100%; max-width: var(--content-max);
   display: flex; align-items: center; justify-content: space-between;
 }
+.nav-actions { display: flex; align-items: center; gap: 1rem; }
+nav.scrolled { border-bottom-color: var(--hairline); }
 .nav-logo {
   font-size: 1.15rem; font-weight: 900; letter-spacing: -0.02em;
   color: var(--white); display: flex; align-items: center; gap: 8px;
@@ -56,13 +89,41 @@ nav {
 .nav-links a { font-size: 0.85rem; color: var(--muted); transition: color .2s; }
 .nav-links a:hover, .nav-links a.active { color: var(--white); }
 .nav-cta {
-  background: var(--green); color: var(--black);
+  background: var(--green); color: var(--on-accent);
   padding: 9px 22px; border-radius: 30px;
   font-size: 0.85rem; font-weight: 800; letter-spacing: -0.01em;
   border: none; cursor: pointer; transition: background .2s, transform .1s;
 }
 .nav-cta:hover { background: var(--green-d); }
 .nav-cta:active { transform: scale(0.97); }
+
+/* ── THEME TOGGLE ─────────────────────────────────────────────────────────── */
+.theme-toggle {
+  position: relative;
+  width: 52px; height: 28px;
+  border-radius: 30px;
+  background: var(--black3);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background .3s ease, border-color .3s ease;
+}
+.theme-toggle-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; line-height: 1;
+  transition: transform .3s cubic-bezier(.4,0,.2,1), background .3s ease;
+  transform: translateX(24px);
+}
+[data-theme="light"] .theme-toggle-thumb {
+  transform: translateX(0);
+  background: var(--green);
+}
+.theme-toggle-icon { transition: opacity .2s ease; }
 
 /* hamburger */
 .hamburger {
@@ -84,7 +145,7 @@ nav {
 
 .mobile-menu {
   position: fixed; inset: 64px 0 0 0; z-index: 299;
-  background: rgba(10,15,13,0.98);
+  background: var(--menu-bg);
   backdrop-filter: blur(20px);
   display: flex; flex-direction: column;
   padding: 2rem var(--pad);
@@ -109,6 +170,11 @@ nav {
 .mobile-menu .nav-cta {
   margin-top: 1.5rem; padding: 14px; text-align: center; font-size: 1rem;
 }
+.mobile-theme-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 0; border-bottom: 1px solid var(--border);
+  font-size: 1.1rem; font-weight: 700; color: var(--white);
+}
 body.menu-open { overflow: hidden; }
 
 /* ── HERO ─────────────────────────────────────────────────────────────────── */
@@ -123,14 +189,14 @@ body.menu-open { overflow: hidden; }
 }
 .hero-bg {
   position: absolute; inset: 0; z-index: 0;
-  background: radial-gradient(ellipse 60% 80% at 70% 50%, rgba(0,232,122,0.07) 0%, transparent 70%),
-              radial-gradient(ellipse 40% 60% at 90% 10%, rgba(245,166,35,0.05) 0%, transparent 60%);
+  background: radial-gradient(ellipse 60% 80% at 70% 50%, var(--glow-green) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 60% at 90% 10%, var(--glow-amber) 0%, transparent 60%);
 }
 .hero-grid-lines {
   position: absolute; inset: 0; z-index: 0;
   background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 .hero-left {
@@ -168,7 +234,7 @@ body.menu-open { overflow: hidden; }
 }
 .hero-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .btn-primary {
-  background: var(--green); color: var(--black);
+  background: var(--green); color: var(--on-accent);
   padding: 14px 32px; border-radius: 50px;
   font-size: 0.95rem; font-weight: 800; letter-spacing: -0.01em;
   border: none; cursor: pointer; transition: all .2s;
@@ -181,7 +247,7 @@ body.menu-open { overflow: hidden; }
   font-size: 0.95rem; font-weight: 600;
   border: 1.5px solid var(--border); cursor: pointer; transition: all .2s;
 }
-.btn-secondary:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
+.btn-secondary:hover { border-color: var(--white); background: var(--black3); }
 
 .hero-stats {
   display: flex; gap: 2rem; margin-top: 3rem;
@@ -204,7 +270,7 @@ body.menu-open { overflow: hidden; }
   border-radius: 24px;
   padding: 2.25rem 2rem;
   width: 100%; max-width: 400px;
-  box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow: 0 40px 80px var(--card-shadow-lg), inset 0 1px 0 var(--hairline);
 }
 .card-tag {
   font-size: 0.7rem; font-weight: 800; letter-spacing: 0.1em;
@@ -226,12 +292,12 @@ body.menu-open { overflow: hidden; }
   outline: none; transition: border-color .2s;
 }
 .field-input:focus { border-color: rgba(0,232,122,0.5); }
-.field-input::placeholder { color: #3d4d41; }
+.field-input::placeholder { color: var(--muted); opacity: 0.6; }
 .field-input option { background: var(--black3); }
 
 .submit-btn {
   width: 100%; padding: 14px;
-  background: var(--amber); color: var(--black);
+  background: var(--amber); color: var(--on-accent);
   border: none; border-radius: 12px;
   font-size: 0.95rem; font-weight: 900; letter-spacing: -0.01em;
   cursor: pointer; margin-top: 0.5rem;
@@ -259,11 +325,11 @@ body.menu-open { overflow: hidden; }
 }
 @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .ticker-item {
-  font-size: 0.8rem; font-weight: 800; color: var(--black);
+  font-size: 0.8rem; font-weight: 800; color: #0A0F0D;
   letter-spacing: 0.06em; text-transform: uppercase;
   display: flex; align-items: center; gap: 10px;
 }
-.ticker-sep { color: rgba(0,0,0,0.25); }
+.ticker-sep { color: rgba(10,15,13,0.3); }
 
 /* ── SECTION BASE ─────────────────────────────────────────────────────────── */
 .section { padding: var(--section-y) var(--pad); max-width: var(--content-max); margin: 0 auto; }
@@ -295,13 +361,13 @@ body.menu-open { overflow: hidden; }
 .step-card:hover { background: var(--black3); }
 .step-num {
   font-size: 3.5rem; font-weight: 900; letter-spacing: -0.04em;
-  color: rgba(0,232,122,0.12); line-height: 1;
+  color: rgba(0,194,106,0.12); line-height: 1;
 }
 .step-card h4 { font-size: 1rem; font-weight: 800; color: var(--white); letter-spacing: -0.02em; }
 .step-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
 .step-arrow {
   position: absolute; top: 2.5rem; right: 2rem;
-  font-size: 1.2rem; color: rgba(255,255,255,0.1);
+  font-size: 1.2rem; color: var(--border);
 }
 
 /* ── WHY ──────────────────────────────────────────────────────────────────── */
@@ -339,7 +405,7 @@ body.menu-open { overflow: hidden; }
   padding: 2rem; flex-shrink: 0;
   transition: transform .2s, box-shadow .2s;
 }
-.rest-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+.rest-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px var(--card-shadow); }
 .rest-emoji { font-size: 2.5rem; margin-bottom: 1rem; }
 .rest-name { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; color: var(--white); margin-bottom: 4px; }
 .rest-loc { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
@@ -347,8 +413,8 @@ body.menu-open { overflow: hidden; }
   display: inline-block; font-size: 0.7rem; font-weight: 700;
   padding: 4px 10px; border-radius: 30px; letter-spacing: 0.04em;
 }
-.tag-live { background: rgba(0,232,122,0.12); color: var(--green); border: 1px solid rgba(0,232,122,0.25); }
-.tag-soon { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+.tag-live { background: rgba(0,194,106,0.12); color: var(--green); border: 1px solid rgba(0,194,106,0.25); }
+.tag-soon { background: var(--black3); color: var(--muted); border: 1px solid var(--border); }
 
 /* ── CITIES ───────────────────────────────────────────────────────────────── */
 .cities-section { background: var(--black2); }
@@ -360,8 +426,8 @@ body.menu-open { overflow: hidden; }
   display: flex; flex-direction: column; gap: 8px;
   transition: border-color .2s, transform .2s;
 }
-.city-card.live { border-color: rgba(0,232,122,0.3); }
-.city-card.live:hover { transform: translateY(-3px); border-color: rgba(0,232,122,0.6); }
+.city-card.live { border-color: rgba(0,194,106,0.35); }
+.city-card.live:hover { transform: translateY(-3px); border-color: var(--green); }
 .city-name { font-size: 1rem; font-weight: 800; letter-spacing: -0.02em; color: var(--white); }
 .city-status { font-size: 0.72rem; font-weight: 700; }
 .city-status.live { color: var(--green); }
@@ -434,6 +500,7 @@ footer a:hover { color: var(--green); }
   .why-grid { grid-template-columns: 1fr 1fr; }
 
   .nav-links { display: none; }
+  .nav-actions .nav-cta, .nav-actions > .theme-toggle { display: none; }
   .hamburger { display: flex; }
 }
 @media (max-width: 560px) {
@@ -463,10 +530,17 @@ footer a:hover { color: var(--green); }
       <a href="restaurants.html">Restaurants</a>
       <a href="cities.html">Cities</a>
     </div>
-    <button class="nav-cta" id="navCtaDesktop" onclick="document.getElementById('signup-card').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
-    <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <span class="theme-toggle-thumb">
+          <span class="theme-toggle-icon" id="themeIcon">🌙</span>
+        </span>
+      </button>
+      <button class="nav-cta" id="navCtaDesktop" onclick="document.getElementById('signup-card').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </div>
 </nav>
 
@@ -476,6 +550,14 @@ footer a:hover { color: var(--green); }
   <a href="how-it-works.html">How it works</a>
   <a href="restaurants.html">Restaurants</a>
   <a href="cities.html">Cities</a>
+  <div class="mobile-theme-row">
+    <span>Dark mode</span>
+    <button class="theme-toggle" id="themeToggleMobile" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <span class="theme-toggle-thumb">
+        <span class="theme-toggle-icon" id="themeIconMobile">🌙</span>
+      </span>
+    </button>
+  </div>
   <button class="nav-cta" onclick="closeMenuAndScroll()">Join waitlist</button>
 </div>
 
@@ -755,6 +837,33 @@ footer a:hover { color: var(--green); }
 </footer>
 
 <script>
+// ── Theme toggle ──────────────────────────────────────────────────────────
+(function(){
+  const stored = localStorage.getItem('hl_theme'); // 'light' | 'dark' | null
+  const theme = stored === 'light' ? 'light' : 'dark'; // default: dark
+  applyTheme(theme, false);
+
+  function applyTheme(t, animate){
+    if (t === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    document.querySelectorAll('.theme-toggle-icon').forEach(el => {
+      el.textContent = t === 'dark' ? '🌙' : '☀️';
+    });
+    localStorage.setItem('hl_theme', t);
+  }
+
+  function toggleTheme(){
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    applyTheme(isLight ? 'dark' : 'light', true);
+  }
+
+  document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
+  document.getElementById('themeToggleMobile')?.addEventListener('click', toggleTheme);
+})();
+
 // ── Hamburger menu ────────────────────────────────────────────────────────
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobileMenu');
@@ -794,6 +903,7 @@ function joinWaitlist() {
     alert('Please fill in all fields.');
     return;
   }
+
   document.getElementById('signup-form').style.display = 'none';
   document.getElementById('success-state').style.display = 'block';
   const msg = `*Hyperlocal Waitlist*\n\nName: ${name}\nPhone: ${phone}\nCity: ${city}\nRole: ${role}`;
@@ -815,8 +925,7 @@ document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
 // ── Nav scroll effect ─────────────────────────────────────────────────────
 window.addEventListener('scroll', () => {
-  document.querySelector('nav').style.borderBottomColor =
-    window.scrollY > 20 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)';
+  document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 20);
 });
 </script>
 </body>
