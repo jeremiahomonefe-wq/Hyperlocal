@@ -283,35 +283,7 @@ body.menu-open { overflow: hidden; }
 }
 .card-sub { font-size: 0.83rem; color: var(--muted); margin-bottom: 1.75rem; }
 
-.field-wrap { margin-bottom: 1rem; }
-.field-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; display: block; margin-bottom: 6px; }
-.field-input {
-  width: 100%; padding: 12px 16px;
-  background: var(--black3); border: 1px solid var(--border);
-  border-radius: 10px; font-size: 0.9rem; color: var(--white);
-  outline: none; transition: border-color .2s;
-}
-.field-input:focus { border-color: rgba(0,232,122,0.5); }
-.field-input::placeholder { color: var(--muted); opacity: 0.6; }
-.field-input option { background: var(--black3); }
-
-.submit-btn {
-  width: 100%; padding: 14px;
-  background: var(--amber); color: var(--on-accent);
-  border: none; border-radius: 12px;
-  font-size: 0.95rem; font-weight: 900; letter-spacing: -0.01em;
-  cursor: pointer; margin-top: 0.5rem;
-  transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.submit-btn:hover { background: var(--amber-d); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(245,166,35,0.3); }
-.submit-btn:active { transform: scale(0.98); }
-
-.success-state {
-  display: none; text-align: center; padding: 1rem 0;
-}
-.success-icon { font-size: 3rem; margin-bottom: 1rem; }
-.success-state h3 { font-size: 1.2rem; font-weight: 900; color: var(--green); margin-bottom: 6px; }
-.success-state p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+#tally-form-frame { min-height: 350px; }
 
 /* ── TICKER STRIP ─────────────────────────────────────────────────────────── */
 .ticker-section {
@@ -604,48 +576,21 @@ footer a:hover { color: var(--green); }
       <div class="card-title">Get in first.</div>
       <div class="card-sub">Join the waitlist and be the first to order when we launch.</div>
 
-      <div id="signup-form">
-        <div class="field-wrap">
-          <label class="field-label">Your name</label>
-          <input class="field-input" type="text" id="fName" placeholder="e.g. Chioma Obi" />
-        </div>
-        <div class="field-wrap">
-          <label class="field-label">Phone number</label>
-          <input class="field-input" type="tel" id="fPhone" placeholder="08012345678" />
-        </div>
-        <div class="field-wrap">
-          <label class="field-label">Your city</label>
-          <select class="field-input" id="fCity">
-            <option value="">Select city</option>
-            <option>Abraka</option>
-            <option>Warri</option>
-            <option>Sapele</option>
-            <option>Asaba</option>
-            <option>Ughelli</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="field-wrap">
-          <label class="field-label">I am a...</label>
-          <select class="field-input" id="fRole">
-            <option value="">Select role</option>
-            <option>Customer — I want to order food</option>
-            <option>Restaurant owner — I want to list my business</option>
-            <option>Delivery rider — I want to earn</option>
-          </select>
-        </div>
-        <button class="submit-btn" onclick="joinWaitlist()">Reserve my spot ↗</button>
-      </div>
-
-      <div class="success-state" id="success-state">
-        <div class="success-icon">🎉</div>
-        <h3>You're on the list!</h3>
-        <p>We'll WhatsApp you the moment Hyperlocal goes live in your city.</p>
-        <button class="submit-btn" style="margin-top:1.25rem" onclick="shareApp()">Share with a friend ↗</button>
-      </div>
+      <iframe
+        data-tally-src="https://tally.so/embed/NpObqB?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+        loading="lazy"
+        width="100%"
+        height="350"
+        frameborder="0"
+        marginheight="0"
+        marginwidth="0"
+        title="Hyperlocal Waitlist"
+        id="tally-form-frame"
+      ></iframe>
     </div>
   </div>
 </section>
+
 
 <!-- TICKER -->
 <div class="ticker-section" aria-hidden="true">
@@ -893,29 +838,20 @@ function closeMenuAndScroll(){
   setTimeout(() => document.getElementById('signup-card').scrollIntoView({behavior:'smooth'}), 300);
 }
 
-// ── Waitlist ──────────────────────────────────────────────────────────────
-function joinWaitlist() {
-  const name  = document.getElementById('fName').value.trim();
-  const phone = document.getElementById('fPhone').value.trim();
-  const city  = document.getElementById('fCity').value;
-  const role  = document.getElementById('fRole').value;
-  if (!name || !phone || !city || !role) {
-    alert('Please fill in all fields.');
-    return;
+// ── Tally embed loader ──────────────────────────────────────────────────
+(function(){
+  var d = document, w = "https://tally.so/widgets/embed.js";
+  var v = function(){
+    if (typeof Tally !== 'undefined') Tally.loadEmbeds();
+    else d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){ e.src = e.dataset.tallySrc; });
+  };
+  if (typeof Tally !== 'undefined') v();
+  else if (d.querySelector('script[src="' + w + '"]') == null) {
+    var s = d.createElement("script");
+    s.src = w; s.onload = v; s.onerror = v;
+    d.body.appendChild(s);
   }
-
-  document.getElementById('signup-form').style.display = 'none';
-  document.getElementById('success-state').style.display = 'block';
-  const msg = `*Hyperlocal Waitlist*\n\nName: ${name}\nPhone: ${phone}\nCity: ${city}\nRole: ${role}`;
-  setTimeout(() => {
-    window.open('https://wa.me/2348103769079?text=' + encodeURIComponent(msg), '_blank');
-  }, 800);
-}
-
-function shareApp() {
-  const msg = `I just joined the Hyperlocal waitlist! 🍛⚡\n\nFast food delivery coming to Abraka & Warri — built for Delta State.\n\nJoin here: https://hyperlocal.ng`;
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-}
+})();
 
 // ── Scroll reveal ─────────────────────────────────────────────────────────
 const obs = new IntersectionObserver((entries) => {
